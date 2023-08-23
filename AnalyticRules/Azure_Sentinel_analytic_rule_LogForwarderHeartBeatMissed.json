@@ -1,0 +1,55 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workspace": {
+            "type": "String"
+        }
+    },
+    "resources": [
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/6464b8de-57a8-4017-a586-9a56db610e96')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/6464b8de-57a8-4017-a586-9a56db610e96')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2022-11-01-preview",
+            "properties": {
+                "displayName": "Log forwarder heartbeat missed",
+                "description": "the heartbeat for the log forwarder LIDC-SYSLOG01, has not been received in the last 10 minutes.",
+                "severity": "High",
+                "enabled": true,
+                "query": "Heartbeat\n| where TimeGenerated >= ago(5m)\n| where Computer like \"lidc-syslog\"\n| project Computer, TimeGenerated\n| order by TimeGenerated desc\n| project n = TimeGenerated, nminus = prev(TimeGenerated), TimeGenerated, Computer\n| where isnotempty(nminus)\n// show time NOW vs time  n -1 row\n| extend second = datetime_diff('second',nminus, n)\n| where second >= 60\n\n",
+                "queryFrequency": "PT10M",
+                "queryPeriod": "PT5H",
+                "triggerOperator": "Equal",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [],
+                "techniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        }
+    ]
+}
